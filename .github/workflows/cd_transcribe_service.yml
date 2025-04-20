@@ -17,4 +17,11 @@ jobs:
 
       - name: copying files
         run: cp -r transcribe_service/* hf_repo/
-      - run: ls hf_repo
+
+      - name: sync repo
+      - run: |
+          cd hf_repo
+          git add .
+          git commit -m "sync ${{ github.sha }}"
+          git push https://adarshwshaw:${{ secrets.HF_KEY }}@huggingface.co/spaces/adarshwshaw/transcribe_sample main
+
