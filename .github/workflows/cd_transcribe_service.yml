@@ -17,5 +17,5 @@ jobs:
           mkdir -p copy_transcribe_service
           cp -r transcribe_service/* copy_transcribe_service/
 
-      - run: ls
+      - run: ls copy_transcribe_service
 
