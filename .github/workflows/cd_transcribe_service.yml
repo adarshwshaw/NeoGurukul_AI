@@ -1,0 +1,14 @@
+name: sync transcribe service
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync_space:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+      - uses: actions/checkout@v4
+
