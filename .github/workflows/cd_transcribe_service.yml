@@ -19,7 +19,7 @@ jobs:
         run: cp -r transcribe_service/* hf_repo/
 
       - name: sync repo
-      - run: |
+        run: |
           cd hf_repo
           git add .
           git commit -m "sync ${{ github.sha }}"
