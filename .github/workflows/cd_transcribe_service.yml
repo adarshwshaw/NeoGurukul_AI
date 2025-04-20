@@ -12,13 +12,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v4
 
-      - name: Extract transcribe service
-        run: |
-          mkdir -p copy_transcribe_service
-          cp -r transcribe_service/* copy_transcribe_service/
-
       - name: clone hf_repo
         run: git clone https://adarshwshaw:${{ secrets.HF_KEY }}@huggingface.co/spaces/adarshwshaw/transcribe_sample hf_repo
 
-      - run: ls 
+      - name: copying files
+        run: cp -r transcribe_service/* hf_repo/
       - run: ls hf_repo
