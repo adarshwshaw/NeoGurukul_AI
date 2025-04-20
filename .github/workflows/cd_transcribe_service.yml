@@ -20,7 +20,7 @@ jobs:
       - name: clone hf_repo
         uses: actions/checkout@v2
         with:
-          repository: https://huggingface.co/adarshwshaw/transcribe_sample
+          repository: adarshwshaw/transcribe_sample
           token: ${{ secrets.HF_KEY }}
           path: hf_repo
 
