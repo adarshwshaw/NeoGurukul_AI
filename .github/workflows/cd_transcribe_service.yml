@@ -21,6 +21,8 @@ jobs:
       - name: sync repo
         run: |
           cd hf_repo
+          git config --global user.email "adarshwshaw@gmail.com"
+          git config --global user.name "Adarsh Shaw"
           git add .
           git commit -m "sync ${{ github.sha }}"
           git push https://adarshwshaw:${{ secrets.HF_KEY }}@huggingface.co/spaces/adarshwshaw/transcribe_sample main
