@@ -18,7 +18,7 @@ print(device)
 # with open("env","r") as envfile:
 #     dbcreds = json.load(envfile)
 
-uri = f"mongodb+srv://{os.getenv("su_user")}:{os.getenv('su_password')}@shaw.1iozj.mongodb.net/?retryWrites=true&w=majority&appName=Shaw"
+uri = f"mongodb+srv://{os.getenv('su_user')}:{os.getenv('su_password')}@shaw.1iozj.mongodb.net/?retryWrites=true&w=majority&appName=Shaw"
 # Create a new client and connect to the server
 
 
