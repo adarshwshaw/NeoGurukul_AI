@@ -22,7 +22,7 @@ uri = f"mongodb+srv://{os.getenv('su_user')}:{os.getenv('su_password')}@shaw.1io
 # Create a new client and connect to the server
 
 
-def transcribe(lang, ifile):
+def transcribe(lang,metadata, ifile):
     transcriber=None
     if lang == langs[0]:
         transcriber  = pipeline("automatic-speech-recognition", model="openai/whisper-base",chunk_length_s=30,device=device,generate_kwargs = {"language":"en","task": "translate"})
@@ -42,7 +42,7 @@ def transcribe(lang, ifile):
     print("connected to db")
     # Transcribe the MP3 audio file
     transcription = transcriber(ifile)
-    obj = {"content": transcription["text"],"classId":"default"}
+    obj = {"content": transcription["text"],**metadata}
     try:
         result = collection.insert_one(obj)
         
@@ -60,7 +60,9 @@ def transcribe(lang, ifile):
 
 demo = gr.Interface(
     fn=transcribe,
-    inputs=[gr.Dropdown(langs, label="Language", info="Give the language of the audio"),gr.Audio(sources=['upload'],type='filepath',label='input',show_label=True)],
+    inputs=[gr.Dropdown(langs, label="Language", info="Give the language of the audio"),\
+            gr.JSON(label="metadata",show_label=True), \
+            gr.Audio(sources=['upload'],type='filepath',label='input',show_label=True)],
     outputs=["text"],
     api_name="transcribe"
 )
