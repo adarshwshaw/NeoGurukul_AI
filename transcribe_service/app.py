@@ -33,22 +33,18 @@ def transcribe(lang,metadata, ifile):
     # Path to your MP3 audio file
 
     client = MongoClient(uri )
-    try:
-        client.admin.command('ping')
-    except Exception as e:
-        return str(e)
     db = client.get_database("NeoGurukul_AI")
     collection = db.get_collection("transcriptions")
     print("connected to db")
     # Transcribe the MP3 audio file
     transcription = transcriber(ifile)
-    obj = {"content": transcription["text"],**metadata}
+    obj = {"content": transcription["text"],"metadata":metadata}
     try:
         result = collection.insert_one(obj)
         
     except Exception as e:
         print(e)
-        return str(e)
+        raise gr.Error(str(e))
     else:
         print("result: ",result)
     finally:
@@ -64,7 +60,8 @@ demo = gr.Interface(
             gr.JSON(label="metadata",show_label=True), \
             gr.Audio(sources=['upload'],type='filepath',label='input',show_label=True)],
     outputs=["text"],
-    api_name="transcribe"
+    api_name="transcribe",
+    live=False
 )
 
 demo.launch(show_api=True,debug=True)
