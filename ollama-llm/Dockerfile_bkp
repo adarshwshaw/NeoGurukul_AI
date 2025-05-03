@@ -1,16 +1,4 @@
-# Use NVIDIA CUDA runtime base image
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
-
-
-
-# System dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    gnupg \
-    netcat \
-    lsb-release \
-    && rm -rf /var/lib/apt/lists/*
+FROM ollama/ollama:latest
 
 # Create a user and set up permissions
 RUN useradd -ms /bin/bash ollama-user
@@ -19,8 +7,11 @@ RUN useradd -ms /bin/bash ollama-user
 ENV HOME=/home/ollama-user
 WORKDIR $HOME
 
-# Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
+# Ensure the user has access to the directory
+RUN mkdir -p $HOME/.ollama && chown -R ollama-user:ollama-user $HOME/.ollama
+
+# Install netcat (nc) for checking server readiness
+RUN apt-get update && apt-get install -y netcat
 
 # Copy the entrypoint script before switching users
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
