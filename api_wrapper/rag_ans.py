@@ -31,7 +31,7 @@ embed_model= OllamaEmbedding(
     ollama_additional_kwargs={"mirostat": 0},
 )
 
-Settings.llm = Ollama(model="llama3.2", base_url=base_url, request_timeout=300.0)
+Settings.llm = Ollama(model="llama3.2", base_url=base_url, request_timeout=600.0)
 def get_llm_response(metadata,query):
     print("loaded llm")
 

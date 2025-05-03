@@ -49,7 +49,7 @@ def parse_gradio_res(res):
     return parsed
 
 
-def stream_request_handler(metadata):
+def stream_request_handler(metadata,lang):
     global stream_outs
     job_id=metadata['classId']
     url= "{}/gradio_api/queue/data?session_hash={}".format(transcribe_uri,job_id)
@@ -71,7 +71,10 @@ def stream_request_handler(metadata):
     if stream_outs[job_id]['success']:
         stream_outs[job_id]['msg']='heartbeat'
         embed_text(metadata,stream_outs[job_id]['output']['data'][0])
+        stream_outs[job_id]['msg']='chatready'
         query = "Give me the summary?"
+        if lang == 'Hindi':
+            query += ' in hindi'
         summary=None
         try:
             summary = get_llm_response(metadata,query)
@@ -116,7 +119,7 @@ async def transcribe(req:Request, bt:BackgroundTasks):
     if response.status_code == 503:
         raise HTTPException(status_code=503,detail={"error_msg":response.text})
     evid = json.loads(response.text)
-    bt.add_task(stream_request_handler,metadata=metadata)
+    bt.add_task(stream_request_handler,metadata=metadata,lang=lang)
     return {"event_id":evid['event_id'],"session_hash":metadata['classId']}
 
 
@@ -148,7 +151,11 @@ async def transcribe_result(req:Request):
 async def summary(req:Request):
     data = await req.json()
     metadata = data.get('metadata')
+    lang = data.get('lang')
     query = "Give me the summary?"
+    if lang == 'Hindi':
+        query += ' in hindi'
+    print(query)
     response=None
     try:
         response = get_llm_response(metadata,query)
