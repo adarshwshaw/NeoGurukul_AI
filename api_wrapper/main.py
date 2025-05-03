@@ -4,6 +4,9 @@ import json
 import os
 from dotenv import load_dotenv
 
+from rag import embed_text
+from rag_ans import get_llm_response
+
 app = FastAPI()
 
 load_dotenv()
@@ -32,8 +35,9 @@ def parse_gradio_res(res):
     return parsed
 
 
-def stream_request_handler(job_id:str):
+def stream_request_handler(metadata):
     global stream_outs
+    job_id=metadata['classId']
     url= "{}/gradio_api/queue/data?session_hash={}".format(transcribe_uri,job_id)
     headers = {
         'Content-Type': 'application/json',
@@ -50,20 +54,10 @@ def stream_request_handler(job_id:str):
             print(stream_outs)
             if 'complete' in stream_outs[job_id]['msg']:
                 break;
-            # if decoded.startswith("event"):
-            #     event = decoded.split(":",1)[-1].strip()
-            #     if event in ("complete", "error"):
-            #         flag=True
-            # elif decoded.startswith("data"):
-            #     data = json.loads(decoded.split(":",1)[-1].strip())
-            #     stream_outs[job_id]={"event":event,"data":data}
-            #     print(stream_outs)
-            #     if flag:
-            #         break
-            # else:
-            #     stream_outs[job_id]={"event":event,"data":decoded}
-            #     break;
-    
+    if stream_outs[job_id]['success']:
+        stream_outs[job_id]['msg']='heartbeat'
+        embed_text(metadata,stream_outs[job_id]['output']['data'][0])
+        stream_outs[job_id]['msg']='complete'
 
 @app.post("/transcribe")
 async def transcribe(req:Request, bt:BackgroundTasks):
@@ -97,7 +91,7 @@ async def transcribe(req:Request, bt:BackgroundTasks):
     if response.status_code == 503:
         raise HTTPException(status_code=503,detail={"error_msg":response.text})
     evid = json.loads(response.text)
-    bt.add_task(stream_request_handler,job_id=metadata['classId'])
+    bt.add_task(stream_request_handler,metadata=metadata)
     return {"event_id":evid['event_id'],"session_hash":metadata['classId']}
 
 
@@ -125,4 +119,15 @@ async def transcribe_result(req:Request):
         del stream_outs[event_id]
     return res
 
-
+@app.post("/summary")
+async def summary(req:Request):
+    data = await req.json()
+    metadata = data.get('metadata')
+    query = "Give me the summary?"
+    response=None
+    try:
+        response = get_llm_response(metadata,query)
+        response = response.response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"error_msg":str(e)})
+    return {"response":response}
