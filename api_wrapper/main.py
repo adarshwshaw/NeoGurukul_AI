@@ -71,7 +71,18 @@ def stream_request_handler(metadata):
     if stream_outs[job_id]['success']:
         stream_outs[job_id]['msg']='heartbeat'
         embed_text(metadata,stream_outs[job_id]['output']['data'][0])
+        query = "Give me the summary?"
+        summary=None
+        try:
+            summary = get_llm_response(metadata,query)
+            summary = summary.response
+        except Exception as e:
+            stream_outs[job_id]['msg']='error'
+            stream_outs[job_id]['output']['summary'] = str(e)
+            raise HTTPException(status_code=500, detail={"error_msg":str(e)})
+        # return {"response":response}
         stream_outs[job_id]['msg']='complete'
+        stream_outs[job_id]['output']['summary'] = summary
 
 @app.post("/transcribe")
 async def transcribe(req:Request, bt:BackgroundTasks):
@@ -130,7 +141,7 @@ async def transcribe_result(req:Request):
             res['output']['data']=res['output']['error']
             del res['output']['error']
     #TODO: write to db and remove from dict
-        del stream_outs[event_id]
+        # del stream_outs[event_id]
     return res
 
 @app.post("/summary")
