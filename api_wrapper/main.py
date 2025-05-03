@@ -1,4 +1,5 @@
 from fastapi import FastAPI,Request,HTTPException,BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 import json
 import os
@@ -8,6 +9,19 @@ from rag import embed_text
 from rag_ans import get_llm_response
 
 app = FastAPI()
+# origins = [
+#     "http://localhost",
+#     "http://localhost:3000",
+#     "https://your-frontend-domain.com"
+# ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],            # Can also be ["*"] to allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],              # Allow all HTTP methods
+    allow_headers=["*"],              # Allow all headers
+)
 
 load_dotenv()
 
@@ -124,6 +138,19 @@ async def summary(req:Request):
     data = await req.json()
     metadata = data.get('metadata')
     query = "Give me the summary?"
+    response=None
+    try:
+        response = get_llm_response(metadata,query)
+        response = response.response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"error_msg":str(e)})
+    return {"response":response}
+
+@app.post("/chat")
+async def chat(req:Request):
+    data = await req.json()
+    metadata = data.get('metadata')
+    query = data.get("query")
     response=None
     try:
         response = get_llm_response(metadata,query)
